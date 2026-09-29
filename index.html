@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#121214" id="theme-color-meta">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>404 Busdriver</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="404 Busdriver">
+  <meta property="og:description" content="MIDI controller for the five FX buses of the Roland SP-404 MkII. Chrome/Edge (Web MIDI).">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23121214'/%3E%3Crect x='7' y='7' width='18' height='18' rx='3' fill='%23ff7a1a'/%3E%3C/svg%3E">
+  <script type="module" crossorigin src="./assets/index-CDDG2uk_.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-Kn7CfQQt.css">
+</head>
+<body>
+  <div id="app">
+    <header id="statusbar">
+      <button id="conn" title="Setup">
+        <span id="conn-dot"></span>
+        <span id="conn-name" class="mono">nicht verbunden</span>
+      </button>
+      <span id="tx"></span>
+      <span id="bpm"><span id="beat"></span><span id="bpm-val">&ndash;</span></span>
+      <button id="view-toggle" class="sbtn pad">Overview</button>
+      <button id="xy-btn" class="sbtn pad">XY</button>
+      <button id="alloff" class="sbtn">ALL OFF</button>
+      <button id="snaps-btn" class="sbtn pad">Snap</button>
+      <button id="lib-btn" class="sbtn pad">Library</button>
+      <button id="setup-btn" class="sbtn pad">Setup</button>
+    </header>
+    <nav id="bustabs"></nav>
+    <main>
+      <section id="view-focus">
+        <div id="focus-head">
+          <button id="efx-pad" class="pad">EFX</button>
+          <div id="fx-select">
+            <button id="fx-prev">&#8249;</button>
+            <button id="fx-name" class="display">
+              <span class="fx-title">(OFF)</span>
+              <span class="fx-sub">choose effect</span>
+            </button>
+            <button id="fx-next">&#8250;</button>
+            <button id="rnd-btn" title="Randomize / Undo">RND</button>
+            <button id="bus-save-btn" title="Save this bus's state as a JAM scene pad">SAVE</button>
+          </div>
+        </div>
+        <div id="focus-favs"></div>
+        <div id="focus-body">
+          <div id="focus-scenes"></div>
+          <div id="faders"></div>
+        </div>
+      </section>
+      <section id="view-overview"></section>
+      <section id="view-xy">
+        <div id="xy-head">
+          <button id="xy-xa" class="display mono">X: &ndash;</button>
+          <button id="xy-ya" class="display mono">Y: &ndash;</button>
+          <button id="xy-mom" class="pad">MOMENTARY</button>
+          <button id="xy-presets-btn" class="pad">PRESETS</button>
+        </div>
+        <div id="lfo-row">
+          <div id="lfo-slots"></div>
+          <button id="lfo-on" class="pad">LFO</button>
+          <button id="lfo-target" class="display mono">Ziel: &ndash;</button>
+          <button id="lfo-wave" class="pad">SIN</button>
+          <button id="lfo-rate" class="pad">1/4</button>
+          <button id="lfo-depth" class="pad">50%</button>
+          <button id="lfo-tap" class="pad">TAP</button>
+        </div>
+        <div id="xy-pad">
+          <div id="xy-lineh"></div>
+          <div id="xy-linev"></div>
+          <div id="xy-cross"></div>
+          <div id="xy-vals" class="display mono"></div>
+        </div>
+      </section>
+      <section id="view-pattern">
+        <div id="ptn-banks"></div>
+        <div id="ptn-grid"></div>
+        <p class="pick-note">Program change: bank = MIDI channel, pattern = PC 0&ndash;15.
+        Requires <b>MIDI mode B</b> on the device and &quot;PC Rx&quot; = ON.
+        The device does not confirm switches via MIDI &ndash; highlighted is the last one sent.</p>
+      </section>
+      <section id="view-play">
+        <div id="play-head">
+          <button id="play-keys-btn" class="pad">KEYS</button>
+          <button id="play-scale-btn" class="pad">SCALE</button>
+          <button id="play-pads-btn" class="pad">PADS</button>
+          <span class="spacer"></span>
+          <button id="play-target" class="pad">SAMPLE CH16</button>
+          <button id="play-root" class="pad">C</button>
+          <button id="play-scalesel" class="pad">DUR</button>
+          <button id="play-layout" class="pad">ISO</button>
+          <button id="play-oct-down" class="pad">OCT &minus;</button>
+          <button id="play-oct-up" class="pad">OCT +</button>
+        </div>
+        <div id="keys-area">
+          <div id="keys"></div>
+          <div id="bend" class="off"><div id="bend-ind"></div></div>
+        </div>
+        <div id="pads-area">
+          <div id="pad-banks"></div>
+          <div id="pad-grid"></div>
+          <div id="loop-row">
+            <button id="lp-rec" class="pad" title="Looper REC/STOP (CC#88) - device must be in looper mode, CH 1">LOOPER REC</button>
+          </div>
+        </div>
+        <div id="scale-area">
+          <div id="scale-grid"></div>
+        </div>
+        <p class="pick-note" id="play-note">Chromatic: pitches whichever sample you last tapped in PADS (CH 16, fixed - independent of the Pad MIDI Channels setting; C2&ndash;C4).</p>
+      </section>
+      <section id="view-jam">
+        <div id="jam-head">
+          <span class="label">JAM</span>
+          <span class="spacer"></span>
+          <button id="jam-select-btn" class="pad">SELECT</button>
+          <button id="jam-clear-btn" class="pad">CLEAR</button>
+          <button id="jam-preset-btn" class="pad">PRESETS</button>
+          <button id="jam-edit-btn" class="pad">EDIT</button>
+        </div>
+        <div id="jam-batch-bar" class="hide">
+          <span id="jam-batch-count" class="label">0 selected</span>
+          <label class="je-field">Channel<input id="jam-batch-ch" type="number" min="1" max="16" value="1"></label>
+          <button id="jam-batch-apply-ch" class="setup-btn primary">Apply</button>
+          <button id="jam-batch-delete" class="setup-btn">Delete</button>
+        </div>
+        <div id="jam-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="stepper">
+    <button id="step-minus">&minus;</button>
+    <button id="step-plus">+</button>
+  </div>
+
+  <div id="picker" class="overlay">
+    <div id="picker-panel">
+      <div id="picker-head">
+        <span id="picker-title" class="label">Effekt</span>
+        <button id="picker-close">&#10005;</button>
+      </div>
+      <div id="picker-body"></div>
+    </div>
+  </div>
+
+  <div id="setup" class="overlay">
+    <div id="setup-panel">
+      <div id="setup-head">
+        <h2>404 BUSDRIVER &ndash; SETUP</h2>
+        <button id="setup-close" class="setup-btn">Close</button>
+      </div>
+      <div id="setup-body">
+        <div id="diag" class="mono"></div>
+        <div id="clock-diag" class="mono">Clock: &ndash;</div>
+        <div class="setup-row" id="setup-actions">
+          <button id="midi-connect" class="setup-btn primary">Connect to SP-404</button>
+          <button id="midi-rescan" class="setup-btn">Reconnect</button>
+          <button id="push-state" class="setup-btn">Send state to device</button>
+          <button id="wake-toggle" class="setup-btn">Keep screen awake: off</button>
+          <button id="horiz-toggle" class="setup-btn">Horizontal faders: off</button>
+          <button id="jam-knob-toggle" class="setup-btn">JAM style: bars</button>
+          <button id="theme-toggle" class="setup-btn">Theme: dark</button>
+          <button id="help-btn" class="setup-btn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M8 3.4C6.6 2.3 4.6 2 2.5 2v10.2c2.1 0 4.1.3 5.5 1.4 1.4-1.1 3.4-1.4 5.5-1.4V2C11.4 2 9.4 2.3 8 3.4z"/><path d="M8 3.4v10.2"/></svg>Manual</button>
+        </div>
+        <div>
+          <h4>MIDI output</h4>
+          <div class="setup-row" id="out-list"></div>
+        </div>
+        <div>
+          <h4>MIDI input</h4>
+          <div class="setup-row" id="in-list"></div>
+        </div>
+        <div>
+          <h4>Direct FX assignment (BUS 1+2)</h4>
+          <div class="setup-row" id="dfx-list"></div>
+          <p class="pick-note">Mirrors the device setting: which effect sits on
+          Direct FX 1&ndash;5? The faders then show the real
+          parameter names (e.g. Sync Delay on DFX3).</p>
+        </div>
+        <div class="infobox">
+          <span class="label">Tempo / Ableton Link</span>
+          The BPM display in the status bar reads incoming MIDI clock
+          &ndash; from any connected port. Link route: Ableton Live or
+          a Link-to-MIDI bridge sends clock to the SP-404
+          (UTILITY &gt; SYSTEM &gt; MIDI: &quot;MIDI Sync&quot;) and to this
+          computer &ndash; device and app then run in sync with the Link session.
+          If the SP-404 itself sends clock (MIDI Sync Out), the app shows
+          its tempo.
+        </div>
+        <div class="infobox">
+          <span class="label">On the device: MIDI mode</span>
+          FX control works in mode <b>A</b> and <b>B</b> (Roland
+          documents it for B only; A verified on the device). Later
+          pattern switching needs mode B: [SHIFT] + [PAD 12]
+          &gt; SYSTEM &gt; MIDI &gt; &quot;MIDI Mode&quot;. Connect the SP-404 MkII
+          directly via USB-C to the computer or iPad.
+        </div>
+        <div class="infobox">
+          <span class="label">iPhone / iPad</span>
+          No iOS browser can do Web MIDI. Open this page there in the app
+          <b>MIDIWeb Browser</b> or <b>Web MIDI Browser</b>
+          (App Store), connect the SP-404 via USB-C.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="snaps" class="overlay">
+    <div id="snaps-panel">
+      <div id="snaps-head">
+        <h2>SNAPSHOTS</h2>
+        <button id="snaps-close" class="setup-btn">Close</button>
+      </div>
+      <div id="snaps-body">
+        <div id="sync-status" class="mono">Sync: &hellip;</div>
+        <div>
+          <h4>Current state (what gets saved)</h4>
+          <div id="snap-current" class="display mono"></div>
+        </div>
+        <div class="snap-grid" id="snap-grid"></div>
+        <p class="pick-note">Tap loads the slot onto all 5 buses (empty slot: saves).
+        Hold saves into the slot. After saving, type the name right in the slot.</p>
+        <div>
+          <h4>Recipes</h4>
+          <div class="setup-row"><button id="recipes-btn" class="setup-btn">Open Recipes</button></div>
+          <p class="pick-note">A full 5-bus preset (effect + all 6 values + on/off per bus) you
+          type in directly, not capped at 8 like the snapshot slots above - handy for
+          transcribing chains from recipe cards/packs without touching a single fader.</p>
+        </div>
+        <div>
+          <h4>Export / Import (JSON)</h4>
+          <textarea id="exchange" spellcheck="false" placeholder="Export writes JSON here for copying &ndash; import reads pasted JSON."></textarea>
+          <div class="setup-row">
+            <button id="exp-btn" class="setup-btn">Export</button>
+            <button id="imp-btn" class="setup-btn">Import</button>
+          </div>
+          <p class="pick-note">Covers both snapshots and JAM &ndash; paste the same
+          JSON on another device to bring your whole setup over. Import replaces
+          JAM entirely and overwrites matching snapshot slot numbers.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="padpick" class="overlay">
+    <div id="padpick-panel">
+      <div id="padpick-head">
+        <h2 id="padpick-title">ASSIGN PAD</h2>
+        <button id="padpick-close" class="setup-btn">Close</button>
+      </div>
+      <div id="padpick-body">
+        <h4>Bank</h4>
+        <div class="setup-row" id="padpick-bank"></div>
+        <h4>Pad</h4>
+        <div class="setup-row" id="padpick-pad"></div>
+        <div class="setup-row"><button id="padpick-none" class="setup-btn">Clear</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="jampreset" class="overlay">
+    <div id="jampreset-panel">
+      <div id="jampreset-head">
+        <h2 id="jampreset-title">JAM PRESETS</h2>
+        <button id="jampreset-close" class="setup-btn">Close</button>
+      </div>
+      <div id="jampreset-body">
+        <div class="setup-row" id="jampreset-list"></div>
+        <p class="pick-note" id="jampreset-note">Adds the preset's controls to your JAM grid &ndash;
+        existing controls are kept. Every added control keeps its own editable
+        channel/CC/label afterward, same as anything else in JAM.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="xypreset" class="overlay">
+    <div id="xypreset-panel">
+      <div id="xypreset-head">
+        <h2 id="xypreset-title">XY PRESETS</h2>
+        <button id="xypreset-close" class="setup-btn">Close</button>
+      </div>
+      <div id="xypreset-body">
+        <div>
+          <h4>Templates</h4>
+          <div class="setup-row" id="xypreset-templates"></div>
+        </div>
+        <div>
+          <h4>Your combos</h4>
+          <div id="xypreset-custom"></div>
+          <div class="setup-row"><button id="xypreset-save" class="setup-btn primary">Save current X/Y as&hellip;</button></div>
+        </div>
+        <p class="pick-note" id="xypreset-note">Templates switch the bus to that effect if it isn't
+        already loaded, then assign both axes from its real parameter names. Your own combos just
+        re-point X/Y to wherever they were pointed when you saved them.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="recipes" class="overlay">
+    <div id="recipes-panel">
+      <div id="recipes-head">
+        <h2>RECIPES</h2>
+        <button id="recipes-close" class="setup-btn">Close</button>
+      </div>
+      <div id="recipes-body">
+        <div id="recipes-list"></div>
+        <div class="setup-row"><button id="recipe-new-btn" class="setup-btn primary">+ New Recipe</button></div>
+        <p class="pick-note">Tap a recipe to load it onto all 5 buses, same as a Snapshot. ✎
+        edits, ✕ deletes.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="recipe-edit" class="overlay">
+    <div id="recipe-edit-panel">
+      <div id="recipe-edit-head">
+        <h2 id="recipe-edit-title">NEW RECIPE</h2>
+        <button id="recipe-edit-close" class="setup-btn">Close</button>
+      </div>
+      <div id="recipe-edit-body">
+        <div class="setup-row"><input id="re-name" class="je-field-wide" type="text" maxlength="30" placeholder="e.g. House Chord Synth"></div>
+        <div id="re-buses"></div>
+        <div class="setup-row"><button id="re-save" class="setup-btn primary">Save Recipe</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="jamedit" class="overlay">
+    <div id="jamedit-panel">
+      <div id="jamedit-head">
+        <h2 id="jamedit-title">EDIT CONTROL</h2>
+        <button id="jamedit-close" class="setup-btn">Close</button>
+      </div>
+      <div id="jamedit-body">
+        <h4>Kind</h4>
+        <div class="setup-row" id="je-kind"></div>
+        <h4>Source</h4>
+        <div class="setup-row" id="je-source"></div>
+        <div id="je-bus-fields">
+          <h4>Bus</h4>
+          <div class="setup-row" id="je-bus"></div>
+          <h4>Control slot</h4>
+          <div class="setup-row" id="je-ctrl"></div>
+        </div>
+        <div id="je-raw-fields">
+          <h4>Output</h4>
+          <div class="setup-row" id="je-port"></div>
+          <h4>Message</h4>
+          <div class="setup-row" id="je-type"></div>
+          <div class="setup-row">
+            <label class="je-field">Channel<input id="je-ch" type="number" min="1" max="16"></label>
+            <label class="je-field" id="je-num-field"><span id="je-num-label">Number</span><input id="je-num" type="number" min="0" max="127"></label>
+          </div>
+        </div>
+        <div id="je-scene-fields">
+          <h4>Bus</h4>
+          <div class="setup-row" id="je-scene-bus"></div>
+          <div class="setup-row">
+            <button id="je-capture" class="setup-btn primary">Capture current state of this bus</button>
+          </div>
+          <p class="pick-note" id="je-scene-status">Not captured yet &ndash; dial in the sound
+          you want live, then tap Capture.</p>
+        </div>
+        <div id="je-pad-fields">
+          <h4>Pad mode</h4>
+          <div class="setup-row" id="je-mode"></div>
+          <div class="setup-row">
+            <label class="je-field" id="je-onval-field">On value<input id="je-onval" type="number" min="0" max="127"></label>
+            <label class="je-field" id="je-offval-field">Off value<input id="je-offval" type="number" min="0" max="127"></label>
+            <label class="je-field" id="je-vel-field">Velocity<input id="je-vel" type="number" min="1" max="127"></label>
+          </div>
+        </div>
+        <h4>Label</h4>
+        <div class="setup-row"><input id="je-label" class="je-field-wide" type="text" maxlength="16" placeholder="e.g. HPF"></div>
+        <div class="setup-row">
+          <button id="je-save" class="setup-btn primary">Save</button>
+          <button id="je-delete" class="setup-btn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="xypick" class="overlay">
+    <div id="xypick-panel">
+      <div id="xypick-head">
+        <h2 id="xypick-title">X AXIS</h2>
+        <button id="xypick-close" class="setup-btn">Close</button>
+      </div>
+      <div id="xypick-body">
+        <h4>Bus</h4>
+        <div class="setup-row" id="xypick-bus"></div>
+        <h4>Control</h4>
+        <div class="setup-row" id="xypick-slot"></div>
+        <div class="setup-row"><button id="xypick-none" class="setup-btn">No assignment</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="help" class="overlay">
+    <div id="help-panel">
+      <div id="help-head">
+        <h2>HANDBUCH</h2>
+        <button id="help-close" class="setup-btn">Close</button>
+      </div>
+      <div id="help-body">
+        <h3>Connection</h3>
+        <p>Connect the SP-404 MkII via USB-C, then Setup &gt; &quot;Connect to SP-404&quot;.
+        On desktop use Chrome or Edge; on iPhone/iPad use the <b>MIDIWeb Browser</b> app.
+        <b>Device MIDI setup</b> ([SHIFT]+[PAD 12] &gt; SYSTEM &gt; MIDI): mode <b>B</b>
+        (mode A only covers FX control), &quot;PC Rx&quot; <b>ON</b> (patterns only &ndash;
+        without it the device silently ignores Program Change), and
+        &quot;Pad MIDI Channels&quot; matching the app's <b>PAD-CH</b> button
+        (PLAY &gt; PADS, default 1/2). Nothing else to set: chromatic play is a
+        fixed CH 16, FX control is fixed CH 1&ndash;5, no SysEx involved.
+        If the app seems outdated, load the URL with <b>?v=99</b> (cache); the build number is shown in Setup.</p>
+        <h3>Status bar and tabs</h3>
+        <p>Connection dot (tap = Setup), TX blinker, BPM on incoming clock,
+        Overview/Focus, XY, <b>ALL OFF</b> (all buses off + remembered; a second tap restores),
+        Snap, Setup. Tabs: BUS 1&ndash;4, IN, PLAY, PTN &ndash; the LEDs show active effects.</p>
+        <h3>Fader gestures (Focus)</h3>
+        <p>Relative drag &ndash; the first touch never jumps. <b>Fine-tune:</b> while dragging,
+        pull sideways (finer from 60 px, very fine from 120 px). <b>Double tap</b> = default.
+        Tap the value window = &plusmn;1 stepper. Desktop: mouse wheel &plusmn;1, Shift &plusmn;10.
+        <b>EFX pad:</b> tap = on/off, <b>hold = momentary</b>.
+        &lsaquo;/&rsaquo; step through favorites. <b>RND</b> randomizes (sparing LEVEL/SEND/GAIN),
+        then acts as <b>UNDO</b> for 6 s.</p>
+        <h3>Effects</h3>
+        <p>Tap the effect name to open the picker: Recent, Favorites (star via hold),
+        categories. The bus types have different sets (Roland's spec) &ndash;
+        Sync Delay &amp; co. only on BUS 3/4, voice effects only on INPUT.
+        <b>Direct FX:</b> mirror in Setup what sits on the device's DFX 1&ndash;5 &ndash;
+        the faders then show real parameter names. The app remembers values per effect
+        and sends everything to the device on each switch.</p>
+        <h3>Snapshots (Snap)</h3>
+        <p>8 slots for all 5 buses. <b>Tap loads</b> (empty: saves),
+        <b>hold saves</b> with inline naming, &#10005; deletes. Export/import as JSON &ndash;
+        also for moving snapshots between devices.</p>
+        <h3>XY pad and LFOs</h3>
+        <p>Assign both axes at the top; position = value. <b>MOMENTARY</b> springs back on release.
+        Four LFO slots (chips 1&ndash;4): target, wave (SIN/TRI/SQR/SAW/<b>RND</b> = drift),
+        rate in note values, depth. Time source: <b>CLK</b> (MIDI clock) or <b>TAP</b>
+        (tap the beat). A finger on the target fader pauses and re-centers;
+        switching off parks at the center.</p>
+        <h3>PLAY</h3>
+        <p><b>KEYS:</b> keyboard &ndash; sample chromatic (CH 16, C2&ndash;C4) or
+        vocoder (CH 11) with pitch-bend strip. <b>SCALE:</b> 4&times;4 grid with only
+        in-scale notes; ISO = Move layout (rows a fourth apart), LIN = continuous;
+        roots highlighted. <b>PADS:</b> pad board laid out like the device
+        (pad 1 top left); banks A&ndash;J as five pair buttons (A/F, B/G, C/H,
+        D/I, E/J, pairing each bank with its Mode-B channel-half counterpart)
+        &ndash; each button remembers its own letter independently, tap the
+        active pair again to flip its other letter; all ten stay reachable.
+        &#9733; = custom layout (hold to assign); PAD-CH must
+        match the device setting &quot;Pad MIDI Channels&quot;. <b>Looper</b>
+        (below the pads): just <b>LOOPER REC</b>, toggling start/stop (CC#88).
+        Device must be in looper mode itself; the rest of the looper CC set
+        isn't exposed here - use the device directly for overdub/delete/undo/tempo.</p>
+        <h3>PTN: patterns</h3>
+        <p>Pick a bank via the five pair buttons (A/F, B/G, C/H, D/I, E/J -
+        same picker as PADS, each remembering its own letter independently),
+        tap a pattern (mode B + PC Rx ON; highlighted = last sent).</p>
+        <h3>Tempo / Ableton Link</h3>
+        <p>BPM reads MIDI clock from any port (AUM, Ableton, a bridge). Link route:
+        the Link source sends clock to the SP-404 (UTILITY &gt; SYSTEM &gt; MIDI: &quot;MIDI Sync&quot;)
+        and to this computer &ndash; everything runs in sync. LFOs use the clock, else tap tempo.</p>
+        <h3>Keyboard (desktop)</h3>
+        <p>1&ndash;5 = bus &middot; Space = EFX &middot; O = overview &middot; X = XY &middot; Esc = close.</p>
+        <h3>Tips and limits</h3>
+        <p>No SysEx: the app cannot see effect changes made on the device (encoders do arrive) &ndash;
+        switch effects from the app. <b>BUS 3/4 silent?</b> Device-side bypass: toggle the EFX pad
+        off/on once (the app does this automatically on effect switches). The app never sends
+        on load &ndash; align via &quot;Send state to device&quot; or the first gesture.</p>
+        <h3>About</h3>
+        <p>404 Busdriver is an unofficial open-source project (MIT license) and is not
+        affiliated with or endorsed by Roland Corporation. &quot;SP-404&quot; is a trademark of
+        Roland Corporation. Effect data derived from the public SP-404MK2 reference manual.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="nomidi">
+    <div class="inner">
+      <h1>404 Busdriver</h1>
+      <p><b>This browser cannot do Web MIDI.</b></p>
+      <p>On desktop, use <b>Chrome</b> or <b>Edge</b>.</p>
+      <p>On iPhone/iPad: install <b>MIDIWeb Browser</b> or <b>Web MIDI Browser</b>
+      from the App Store and open this address there.
+      Connect the SP-404 MkII via USB-C.</p>
+      <p>Device MIDI mode: <b>A and B</b> both work for
+      FX control ([SHIFT] + [PAD 12] &gt; SYSTEM &gt; MIDI).</p>
+      <div class="setup-row"><button id="demo-btn" class="setup-btn">View the UI anyway (demo mode)</button></div>
+    </div>
+  </div>
+
+  <div id="banner"></div>
+
+</body>
+</html>
